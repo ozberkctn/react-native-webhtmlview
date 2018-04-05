@@ -1,41 +1,34 @@
-import React, { Component } from 'react'
-import { Linking, WebView } from 'react-native'
+import React, { Component } from "react";
+import { WebView } from "react-native";
 
 class WebHtmlView extends Component {
   constructor(props) {
     super(props);
     this.state = {
       height: props.height || 200
-    }
+    };
   }
 
   _handleNavigationStateChange(navState) {
     if (this.state.height !== navState.title) {
-      const contentHeight = parseInt(navState.title, 10) || 200
+      const contentHeight = parseInt(navState.title, 10) || 200;
       this.setState({
         height: Number(contentHeight)
-      })
+      });
     }
-    if (typeof this.props.onNavigationStateChange === 'function') {
-      this.props.onNavigationStateChange()
-    }
-  }
-  
-  onShouldStartLoadWithRequest(event) {
-    if (event.url.search('about:blank') !== -1) {
-      return true
-    } else {
-      Linking.openURL(event.url)
-      return false
+    if (typeof this.props.onNavigationStateChange === "function") {
+      this.props.onNavigationStateChange();
     }
   }
 
   render() {
-    let {source, autoHeight, style, innerCSS} = this.props;
+    let { source, autoHeight, style, innerCSS } = this.props;
 
     if (!source) {
-      return null
+      return null;
     }
+
+    debugger;
 
     const injectScript = `
       <script>;
@@ -58,45 +51,46 @@ class WebHtmlView extends Component {
           window.addEventListener("resize", updateHeight);
         }());
       </script>
-    `
+    `;
     const startHtmlDoc = `
       <html><head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
         <style>${innerCSS}</style></head><body>
-    `
-    const endHtmlDoc = '</body></html>'
+    `;
+    const endHtmlDoc = "</body></html>";
 
     if (source.html && autoHeight) {
-      let finalHtmlDoc = startHtmlDoc +
-                        '<div style="word-break:break-word">' +
-                        source.html +
-                        '</div>' +
-                        injectScript +
-                        endHtmlDoc
+      let finalHtmlDoc =
+        startHtmlDoc +
+        '<div style="word-break:break-word">' +
+        source.html +
+        "</div>" +
+        injectScript +
+        endHtmlDoc;
 
       source = Object.assign({}, source, {
         html: finalHtmlDoc
-      })
+      });
     }
 
     return (
       <WebView
-        source={source}
-        style={[style, autoHeight ? {height: this.state.height + 25} : null]}
+        source={{ html: source.html, baseUrl: "" }}
+        style={[style, autoHeight ? { height: this.state.height + 25 } : null]}
         automaticallyAdjustContentInsets={false}
         scrollEnabled={!autoHeight}
         javaScriptEnabled={autoHeight}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        onShouldStartLoadWithRequest={this.onShouldStartLoadWithRequest}
-        onNavigationStateChange={this._handleNavigationStateChange.bind(this)} />
-    )
+        onNavigationStateChange={this._handleNavigationStateChange.bind(this)}
+      />
+    );
   }
 }
 
 WebHtmlView.defaultProps = {
-  innerCSS: '',
+  innerCSS: "",
   autoHeight: true
 };
 
-export default WebHtmlView
+export default WebHtmlView;
